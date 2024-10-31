@@ -49,7 +49,14 @@ func (c *Category) FindAll() ([]Category, error) {
 		if err := rows.Scan(&id, &name, &description); err != nil {
 			return nil, err
 		}
-		categories = append(categories, Category{ID: id, Name: name, Description: description})
+		categories = append(
+			categories, 
+			Category{
+				ID: id, 
+				Name: name, 
+				Description: description,
+			},
+		)
 	}
 
 	return categories, nil

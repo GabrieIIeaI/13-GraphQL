@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/devfullcycle/13-GraphQL/graph/model"
 )
@@ -28,7 +27,17 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, input model.NewCa
 
 // CreateCourse is the resolver for the createCourse field.
 func (r *mutationResolver) CreateCourse(ctx context.Context, input model.NewCourse) (*model.Course, error) {
-	panic(fmt.Errorf("not implemented: CreateCourse - createCourse"))
+	course, err := r.CourseDB.Create(input.Name, *input.Description, input.CategoryID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Course{
+		ID:          course.ID,
+		Name:        course.Name,
+		Description: &course.Description,
+	}, nil
 }
 
 // Categories is the resolver for the categories field.
@@ -42,8 +51,8 @@ func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, erro
 	var categoriesModel []*model.Category
 	for _, category := range categories {
 		categoriesModel = append(categoriesModel, &model.Category{
-			ID: category.ID,
-			Name: category.Name,
+			ID:          category.ID,
+			Name:        category.Name,
 			Description: &category.Description,
 		})
 	}
@@ -53,7 +62,22 @@ func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, erro
 
 // Courses is the resolver for the courses field.
 func (r *queryResolver) Courses(ctx context.Context) ([]*model.Course, error) {
-	panic(fmt.Errorf("not implemented: Courses - courses"))
+	courses, err := r.CourseDB.FindAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var coursesModel []*model.Course
+	for _, course := range courses {
+		coursesModel = append(coursesModel, &model.Course{
+			ID:          course.ID,
+			Name:        course.Name,
+			Description: &course.Description,
+		})
+	}
+
+	return coursesModel, nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -64,31 +88,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *queryResolver) Categorys(ctx context.Context) ([]*model.Category, error) {
-	categories, err := r.CategoryDB.FindAll()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var categoriesModel []*model.Category
-
-	for _, category := range categories {
-		categoriesModel = append(categoriesModel, &model.Category{
-			ID: category.ID,
-			Name: category.Name,
-			Description: &category.Description,
-		})
-	}
-
-	return categoriesModel, nil
-}
-*/
